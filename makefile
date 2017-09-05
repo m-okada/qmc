@@ -6,5 +6,5 @@ mask12.h : mask12.c
 	./mask12 > mask12.h
 
 qmc : qmc_main.c qmc.h qmc_misc.c qmc_misc.h readfile.c readfile.h mask12.h
-	gcc qmc_main.c qmc_misc.c readfile.c -o qmc -Wall -O3 -std=c99
+	gcc qmc_main.c qmc_misc.c readfile.c -DNODEBUG -o qmc -Wall -O3 -std=c99
 

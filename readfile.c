@@ -24,11 +24,10 @@
 #include "qmc_misc.h"
 #include "readfile.h"
 
-static signed int parse_line(InFile* in_file, char *line, int pos);
 static int count_textsize(char *filename, int *in_file_numline, int *in_file_maxlen);
 
 //	in_fileへ行を追加
-static signed int parse_line(InFile* in_file, char *line, int pos)
+static signed int parse_line(InFile* in_file, unsigned char *line, int pos)
 {
 	int state = 0;
 	uint32_t logic = 0;
@@ -136,7 +135,7 @@ int read_in_file(InFile* in_file, char* filename)
 		}
 		trim_CRLF(linebuff) ;
 
-		int ret = parse_line(in_file, linebuff, nline);
+		int ret = parse_line(in_file, (unsigned char *)linebuff, nline);
 		if(ret<0) continue ;
 
 		if(out_len<strlen(in_file->out[nline])){

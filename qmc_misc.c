@@ -1,7 +1,5 @@
 ﻿/*
-
-	ロジックテーブル
-
+	色々
 */
 // #define NODEBUG
 // #define DEBUG
@@ -20,12 +18,9 @@
 int nlogic_table = 0;
 LogicTable *logic_table = NULL;
 
-
 //  バッファが一杯ならlogic、logic_buffをreallocする
 static int lt_grow_buff(LogicTable * ptr)
 {
-	int i;
-
 	if ((ptr->t_line+1) >= ptr->buff_lines) {
 		ptr->buff_lines *= 2;
 		ptr->logic = realloc(ptr->logic, ptr->buff_lines * sizeof(uint32_t *));
@@ -40,7 +35,7 @@ static int lt_grow_buff(LogicTable * ptr)
 		ptr->logic_buff = realloc(ptr->logic_buff, ptr->buff_len);
 
 		//  ポインタ付け替え
-		for (i = 0; i < ptr->t_line; i++) {
+		for (int i = 0; i < ptr->t_line; i++) {
 			ptr->logic[i] = ptr->logic_buff + i * ptr->pieces;
 		}
 	}
@@ -92,10 +87,21 @@ int lt_setup(void)
 }
 
 
+void lt_freeall(void){
+	int i ;
+
+	for (i = 0; i < nlogic_table; i++) {
+		if (logic_table[i].index != 0) {
+			lt_delete(logic_table[i].index) ;
+		}
+	}
+}
+
+
 LogicTable* lt_make(int index)
 {
 	int i;
-	if(logic_table==NULL) return NULL ;
+	assert(logic_table!=NULL) ;
 
 	for (i = 0; i < nlogic_table; i++) {
 		if (logic_table[i].index == index) {
@@ -147,8 +153,7 @@ LogicTable* lt_make(int index)
 int lt_delete(int index)
 {
 	LogicTable *ptr = lt_search(index);
-	if (ptr == NULL)
-		return -1;
+	assert(ptr != NULL) ;
 
 	if (ptr->buff_len != 0 && ptr->logic != NULL) {
 		free(ptr->logic);
@@ -168,8 +173,7 @@ int lt_delete(int index)
 int lt_newline(int index)
 {
 	LogicTable *ptr = lt_search(index);
-	if (ptr == NULL)
-		return -1;
+	assert(ptr != NULL) ;
 
 	ptr->t_line++;
 	ptr->t_pos = 0;
@@ -185,16 +189,15 @@ int lt_newline(int index)
 void lt_setbits(int index, int bits)
 {
 	LogicTable *ptr = lt_search(index);
-	if (ptr == NULL)
-		return;
+	assert(ptr != NULL) ;
+
 	ptr->bits = bits;
 }
 
 
 int lt_rename(int old_index, int new_index){
 	LogicTable *ptr = lt_search(old_index);
-	if (ptr == NULL)
-		return -1;
+	assert(ptr != NULL) ;
 
 	ptr->index=new_index ;
 
@@ -206,8 +209,7 @@ int lt_rename(int old_index, int new_index){
 int lt_add_piece(int index, uint32_t piece)
 {
 	LogicTable *ptr = lt_search(index);
-	if (ptr == NULL)
-		return -1;
+	assert(ptr != NULL) ;
 
 	if (ptr->t_line == 0) {		//  １行目なら際限なく追加
 		if(ptr->lines==0) ptr->lines=1 ;
@@ -228,8 +230,7 @@ int lt_add_piece(int index, uint32_t piece)
 
 int lt_add_pieces(int index, uint32_t *pieces, int count){
 	LogicTable *ptr = lt_search(index);
-	if (ptr == NULL)
-		return -1;
+	assert(ptr != NULL) ;
 
 	int i ;
 
@@ -252,16 +253,46 @@ int lt_add_pieces(int index, uint32_t *pieces, int count){
 	return ptr->t_pos;
 }
 
+int lt_lines(int index){
+	LogicTable *ptr = lt_search(index);
+	assert(ptr != NULL) ;
 
-void lt_freeall(void){
-	int i ;
+	return ptr->lines ;
+}
 
-	for (i = 0; i < nlogic_table; i++) {
-		if (logic_table[i].index != 0) {
-			lt_delete(logic_table[i].index) ;
-		}
+int lt_pieces(int index){
+	LogicTable *ptr = lt_search(index);
+	assert(ptr != NULL) ;
+
+	return ptr->pieces ;
+}
+int lt_bits(int index){
+	LogicTable *ptr = lt_search(index);
+	assert(ptr != NULL) ;
+
+	return ptr->bits ;
+}
+
+uint32_t ** lt_logic(int index){
+	LogicTable *ptr = lt_search(index);
+	assert(ptr != NULL) ;
+
+	return ptr->logic ;
+}
+
+void lt_setlines(int index, int lines){
+	LogicTable *ptr = lt_search(index);
+	assert(ptr != NULL) ;
+
+	int wlines=ptr->t_line ;
+	ptr->t_line=lines ;
+	ptr->lines=lines+1 ;
+
+	if(wlines < lines){	//	拡張
+		lt_grow_buff(ptr) ;
 	}
 }
+
 
 
 static const uint32_t popc_table[16] = {
@@ -349,7 +380,7 @@ void free_in_table(InTable* in_table){
 }
 
 
-#if 0
+#if 1
 void lt_dump(void)
 {
 	int i;
@@ -379,6 +410,7 @@ void lt_dump(void)
 				printf("\n");
 			}
 		}
+		printf("  buff_lines: %d\n", logic_table[i].buff_lines);	//  確保済み行領域
 		printf("  buff_len: %d\n", logic_table[i].buff_len);	//  確保済み領域
 		printf("----------------------\n");
 	}

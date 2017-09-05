@@ -55,6 +55,7 @@ uint32_t ** lt_logic(int index);
 void lt_setlines(int index, int lines);
 void lt_setbits(int index, int bits) ;
 
+void lt_dump(void) ;
 
 void free_in_table(InTable* in_table);
 void setup_in_table(InFile* in_file, InTable* in_table, int clmn);
